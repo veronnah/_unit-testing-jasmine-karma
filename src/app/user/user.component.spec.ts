@@ -1,7 +1,8 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { UserComponent } from './user.component';
 import { UserService } from './user.service';
+import { DataService } from '../shared/data.service';
 
 describe('UserComponent', () => {
   let component: UserComponent;
@@ -9,9 +10,9 @@ describe('UserComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ UserComponent ]
+      declarations: [UserComponent]
     })
-    .compileComponents();
+      .compileComponents();
   });
 
   beforeEach(() => {
@@ -36,9 +37,27 @@ describe('UserComponent', () => {
     expect(compiled.querySelector('p').textContent).toContain(component.user.name);
   });
 
-  it('shouldn\t display the user name if user is not logged in', () => {
+  it('shouldn\'t display the user name if user is not logged in', () => {
     let compiled = fixture.debugElement.nativeElement;
     fixture.detectChanges();
     expect(compiled.querySelector('p').textContent).not.toContain(component.user.name);
   });
+
+  it('shouldn\'t fetch data successfully if not called asynchronously ', () => {
+    let dataService = fixture.debugElement.injector.get(DataService);
+    let spy = spyOn(dataService, 'getDetails')
+      .and.returnValue(Promise.resolve('Data '));
+    fixture.detectChanges();
+    expect(component.data).toBeUndefined();
+  });
+
+  it('should fetch data successfully if called asynchronously ', waitForAsync(() => {
+    let dataService = fixture.debugElement.injector.get(DataService);
+    let spy = spyOn(dataService, 'getDetails')
+      .and.returnValue(Promise.resolve('Data '));
+    fixture.detectChanges();
+    fixture.whenStable().then(() => {
+      expect(component.data).toBe('Data');
+    })
+  }));
 });
